@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/pure-min.css" integrity="sha384-oAOxQR6DkCoMliIh8yFnu25d7Eq/PHS21PClpwjOTeU2jRSq11vu66rf90/cZr47" crossorigin="anonymous"/><link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css"/><link rel="stylesheet" href="/Pure/styles.css"/><link rel="stylesheet" href="/all.css"/><title>Getting started with Omnifocus automation - Bitomule's learning shack</title><meta name="twitter:title" content="Getting started with Omnifocus automation - Bitomule's learning shack"/><meta name="og:title" content="Getting started with Omnifocus automation - Bitomule's learning shack"/></head><body><div id="layout" class="pure-g"><div class="sidebar pure-u-1 pure-u-md-1-4"><div class="header"><div id="layout" class="pure-g"><div class="pure-u-md-1-1 pure-u-3-4"><h1 class="brand-title">Bitomule's learning shack</h1><h3 class="brand-tagline">My thoughts about iOS, technology or any other thing that comes to my mind.</h3></div></div><div id="layout" class="pure-g"><div class="pure-u-md-1-1"><a href="mailto:bitomule+blog@gmail.com"><i class="fas fa-envelope-open-text l-box social-icon"></i><a class="social-media" href="mailto:bitomule+blog@gmail.com">Email</a></a></div><div class="pure-u-md-1-1"><a href="https://www.linkedin.com/in/davidcolladosela/"><i class="fab fa-linkedin l-box social-icon"></i><a class="social-media" href="https://www.linkedin.com/in/davidcolladosela/">LinkedIn</a></a></div><div class="pure-u-md-1-1"><a href="https://github.com/bitomule"><i class="fab fa-github-square l-box social-icon"></i><a class="social-media" href="https://github.com/bitomule">GitHub</a></a></div><div class="pure-u-md-1-1"><a href="https://twitter.com/Bitomule"><i class="fab fa-twitter-square l-box social-icon"></i><a class="social-media" href="https://twitter.com/Bitomule">Twitter</a></a></div></div></div></div><div class="content pure-u-1 pure-u-md-3-5 pure-u-xl-6-10"><h2 class="post-title"><a href="/posts/getting-started-with-omnifocus-automation">Getting started with Omnifocus automation</a></h2><p class="post-meta">June 2, 2020</p><div class="post-tags"><a class="post-category post-category-omnifocus" href="/tags/omnifocus">OmniFocus</a><a class="post-category post-category-automation" href="/tags/automation">Automation</a></div><div class="post-description"><div><h2>What´s omnifocus automation</h2><p>Omnifocus automation is the new automation framework by Omni group and it is planned to work across all their apps.</p><p>It uses Javascript as the language where you can build almost anything.</p><h2>History</h2><p>The Omni group has been always close to automation. For years it was possible to automate macOS apps like Omnifocus using the macOS standard automation language: AppleScript</p><p>Automation scene has been changing as users move more into iOS and request automation features there too. There is no AppleScript support on iOS and the replacement is still far from being as powerful (Shortcuts).</p><p>Now the Omni group is setting the gold standard with automation support across all the platforms they support. We can finally automate using the same code for iOS and macOS.</p><h2>Action</h2><p>So let´s get started. The first thing you need to know is what´s an Action.</p><p>An Action is the smallest script you can build and it is all you need to get started.</p><p>It is composed by 2 parts:</p><ul><li>Metadata</li><li>Script</li></ul><p>The first part is created as a comment when creating a single action. It will look like this:</p><pre><code>/*{
+	<span class="string">"type"</span>: <span class="string">"action"</span>,
+	<span class="string">"targets"</span>: [<span class="string">"omnigraffle"</span>,<span class="string">"omnioutliner"</span>,<span class="string">"omniplan"</span>,<span class="string">"omnifocus"</span>],
+	<span class="string">"author"</span>: <span class="string">"Your Name or Company"</span>,
+	<span class="string">"identifier"</span>: <span class="string">"com.youOrCompany.appInitials.actionName"</span>,
+	<span class="string">"version"</span>: <span class="string">"1.0"</span>,
+	<span class="string">"description"</span>: <span class="string">"Description of this action."</span>,
+	<span class="string">"label"</span>: <span class="string">"The menu item text"</span>,
+	<span class="string">"shortLabel"</span>: <span class="string">"Palette Text"</span>
+}*/
+</code></pre><p>The second part is the function that will describe the action. It has two main parts: the action itself and the validation, that allows you to define when this action will be available (only when a task is selected, for example).</p><p>This part looks like:</p><pre><code>(() =&gt; {
+	
+	<span class="keyword">var</span> action = new <span class="type">PlugIn</span>.<span class="type">Action</span>(<span class="call">function</span>(selection, sender){
+		<span class="comment">// action code</span>
+	});
+
+	action.<span class="property">validate</span> = <span class="call">function</span>(selection, sender){
+		<span class="comment">// validation code</span>
+		<span class="keyword">return true</span>
+	};
+	
+	<span class="keyword">return</span> action;
+})();
+</code></pre><p>You can learn more about this simple actions <a href="https://omni-automation.com/actions/action-01.html">here</a></p><h2>Your first basic action</h2><p>We’re going to build our first action for Omnifocus . It’ll be an action that will append “Hello” to the name of the current selected task.</p><p>You can start by using the <a href="https://omni-automation.com/ofac/index.html">OmniFocus template generator</a>. It will help you get your first omnijs file. You can choose any option for input as we’ll change it later.</p><p>Once the template is generated, copy and paste it in a new file with .omnijs file extension.</p><p>The template will look like:</p><pre><code>/*{
+	<span class="string">"type"</span>: <span class="string">"action"</span>,
+	<span class="string">"targets"</span>: [<span class="string">"omnifocus"</span>],
+	<span class="string">"author"</span>: <span class="string">"bitomule"</span>,
+	<span class="string">"identifier"</span>: <span class="string">"com.bitomule.test"</span>,
+	<span class="string">"version"</span>: <span class="string">"1.0"</span>,
+	<span class="string">"description"</span>: <span class="string">"This is a test"</span>,
+	<span class="string">"label"</span>: <span class="string">"Test"</span>,
+	<span class="string">"shortLabel"</span>: <span class="string">"Test"</span>
+}*/
+(() =&gt; {
+	<span class="keyword">var</span> action = new <span class="type">PlugIn</span>.<span class="type">Action</span>(<span class="call">function</span>(selection, sender){
+		<span class="comment">// action code
+		// selection options: tasks, projects, folders, tags</span>
+		task = selection.<span class="property">tasks</span>[<span class="number">0</span>]
+		&lt;# <span class="type">PUT YOUR PROCESSING CODE HERE</span> #&gt;
+	});
+
+	action.<span class="property">validate</span> = <span class="call">function</span>(selection, sender){
+		<span class="comment">// validation code
+		// selection options: tasks, projects, folders, tags</span>
+		<span class="keyword">return true</span>
+	};
+	
+	<span class="keyword">return</span> action;
+})();
+</code></pre><h3>Validate</h3><p>We’ll focus first on validation. This function will tell OmniFocus when this action is available. In our case we want it to be available when a task is selected so we can just replace the code inside {} with:</p><pre><code><span class="keyword">return</span> selection.<span class="property">tasks</span>.<span class="property">length</span> === <span class="number">1</span>
+</code></pre><h3>Action</h3><p>The next step is the action code itself. We want this action to change the name of the selected task.</p><p>First we need to get into selected tasks:</p><pre><code>selection.<span class="property">tasks</span>
+</code></pre><p>This will give us a reference to all the selected tasks.</p><p>Next we’ll grab the first (and only) selected task.</p><pre><code>selection.<span class="property">tasks</span>[<span class="number">0</span>]
+</code></pre><p>And finally we’ll set the name:</p><pre><code>selection.<span class="property">tasks</span>[<span class="number">0</span>].name = selection.<span class="property">tasks</span>[<span class="number">0</span>].name + “<span class="type">Hello</span>”
+</code></pre><p>This is probably the top useless action you can build, but it works to get the basics.</p><h2>Adding an action</h2><p>We’ve created the action, but we need to add it so it can be used with OmniFocus.</p><p>Omni group made this process really easy and flexible so you can continue editing your action when it is already added to the app.</p><h3>macOS</h3><p>I’ll start with the process to add the action to your macOS OmniFocus app:</p><ol><li>Go to the Automation menu (you need the latest update of OmniFocus)</li><li>Tap Modules</li><li>Tap add</li><li>Find the folder where you want your scripts to live. I recommend using a folder you can synchronize with your iOS devices (if you want to use automation on iOS)</li><li>All the omni.js files on that folder will now be available and you can even add them to your toolbar</li></ol><h2>iOS</h2><p>For iOS the process is similar:</p><ol><li>Tap on the terminal like icon</li></ol><img src="/images/omnifocus-automation-ios-menu.png"/><ol start="2"><li>Tap on configure modules</li><li>Tap on Add linked folder</li><li>Select the folder that will host your scripts</li><li>All the omni.js files of that folder will now be available from the terminal like button and you can also set a keyboard shortcut for it from configure modules</li></ol><h2>What´s next</h2><p>There’s a lot of options you can explore with Omni automation. You can start exploring the API and creating your own actions, although I suggest reading first Omni docs about <a href="https://omni-automation.com/plugins/index.html">plugins</a>.</p><p>I may write more posts about automation with OmniFocus if there’s anyone interested. Please just let me know. Some ideas I have are:</p><ul><li>Explaining libraries or how to bundle common actions into shared libraries</li><li>Explain creation of multiple scripts like:<ul><li>Opening the linked url in selected task or project note</li><li>Transforming a task into a project in an specific folder</li><li>Creating a project based on a template</li></ul></li></ul></div></div></div><div class="footer pure-u-1"><div class="pure-u-1">© 2020 Bitomule's learning shack</div><div class="pure-u-1">Generated using <a href="https://github.com/johnsundell/publish">Publish</a>. Written in Swift</div><div class="pure-u-1"><a href="/feed.rss">RSS feed</a></div></div></div></body></html>
