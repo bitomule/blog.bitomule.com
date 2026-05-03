@@ -1,0 +1,20 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostList from '@/components/PostList.astro';
+import { getPosts } from '@/lib/posts';
+
+const posts = await getPosts();
+---
+<BaseLayout>
+  <section class="hero">
+    <h1>Bitomule's learning shack</h1>
+    <p>Notes about iOS, Swift, automation, tooling and the small systems that make daily work better.</p>
+    <div class="link-row" aria-label="Contact links">
+      <a href="mailto:bitomule+blog@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/davidcolladosela/">LinkedIn</a>
+      <a href="https://github.com/bitomule">GitHub</a>
+      <a href="https://twitter.com/Bitomule">Twitter</a>
+    </div>
+  </section>
+  <PostList posts={posts} />
+</BaseLayout>

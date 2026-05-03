@@ -1,0 +1,14 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PostList from '@/components/PostList.astro';
+import { getPosts } from '@/lib/posts';
+
+const posts = await getPosts();
+---
+<BaseLayout title="Posts" description="All posts from Bitomule's learning shack.">
+  <section class="hero">
+    <h1>Posts</h1>
+    <p>All notes, sorted from newest to oldest.</p>
+  </section>
+  <PostList posts={posts} />
+</BaseLayout>

@@ -1,0 +1,18 @@
+---
+import { formatDate, postPath, tagSlug, type BlogPost } from '@/lib/posts';
+
+interface Props { posts: BlogPost[]; }
+const { posts } = Astro.props;
+---
+<ul class="post-list">
+  {posts.map((post) => (
+    <li class="post-card">
+      <p class="meta">{formatDate(post.data.date)}</p>
+      <h2><a href={postPath(post)}>{post.data.title}</a></h2>
+      <p class="excerpt">{post.data.excerpt}</p>
+      <div class="tags" aria-label="Tags">
+        {post.data.tags.map((tag) => <a class="tag" href={`/tags/${tagSlug(tag)}/`}>{tag}</a>)}
+      </div>
+    </li>
+  ))}
+</ul>

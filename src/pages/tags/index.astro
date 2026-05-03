@@ -1,0 +1,15 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getTags } from '@/lib/posts';
+
+const tags = await getTags();
+---
+<BaseLayout title="Tags" description="Browse posts by tag.">
+  <section class="hero">
+    <h1>Tags</h1>
+    <p>Topics across the archive.</p>
+  </section>
+  <div class="tag-grid">
+    {tags.map((tag) => <a class="tag" href={`/tags/${tag.slug}/`}>{tag.label} ({tag.count})</a>)}
+  </div>
+</BaseLayout>
