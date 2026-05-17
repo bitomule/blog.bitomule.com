@@ -25,13 +25,13 @@ Every bug corrected the picture you had in your head. Every ugly abstraction tau
 
 You were writing code. You were also building taste.
 
-## The hidden curriculum
+## What the work was teaching me
 
 I did not learn software engineering from one source. Nobody does.
 
 I learned from writing code that did not work. I learned from reading code written by people who were better than me. I learned from books that gave names to instincts I had not yet understood. I learned from senior engineers who told me what to change, then explained why the shape I had chosen would hurt later.
 
-Most of that felt like work. Some of it felt like friction. Almost none of it felt like curriculum.
+Most of that felt like work. Some of it felt like friction. Almost none of it felt like learning at the time.
 
 That is the trick. The old path taught us because there was no clean way around it. If you did not understand the framework, you got stuck. If your understanding of the system was wrong, the bug stayed there until your understanding changed. If your design was weak, the next feature made you pay for it.
 
