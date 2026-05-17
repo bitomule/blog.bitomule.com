@@ -91,9 +91,9 @@ When the agent writes the recursive function, you skip the reasoning about where
 
 The code ships. The understanding does not.
 
-## Generation matters
+## Try before you ask
 
-One of the most useful ideas from learning research is the generation effect. People remember better when they generate an answer than when they read the same answer. That seems obvious once stated, but it matters a lot with agents.
+One of the most useful ideas from learning research is simple: you remember better when you try to produce an answer yourself than when you read the same answer already written for you. That seems obvious once stated, but it matters a lot with agents.
 
 Watching the agent solve a problem is not the same as solving it.
 
@@ -109,7 +109,7 @@ Predict first, then run.
 
 Explain first, then compare.
 
-If you let the agent go first every time, you train a different muscle. You become better at recognizing plausible answers, not at producing or evaluating them from first principles. Recognition has value, but generation holds up better when the system is on fire and no clean answer is waiting to be recognized.
+If you let the agent go first every time, you train a different muscle. You become better at recognizing plausible answers, not at producing or evaluating them from first principles. Recognition has value, but the ability to make your own attempt holds up better when the system is on fire and no clean answer is waiting to be recognized.
 
 The agent can still be a great teacher. It can ask better questions than a static tutorial. It can adapt to your background. It can explain the same concept through Swift, Rust, TypeScript, or whatever language gives you the strongest analogy. It can catch gaps in your explanation and push you one level deeper.
 
