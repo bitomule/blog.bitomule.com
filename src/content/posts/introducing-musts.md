@@ -5,6 +5,10 @@ tags: ["AI","Programming","Tools"]
 excerpt: "I built musts to move project-specific validation rules out of my head and into the repository."
 ---
 
+**Quick context.** `musts` is a small Rust CLI that closes the validation loop between an agent finishing a change and the change being done. Each project declares its own checks in `MUSTS.yml`. The agent runs `musts validate`, gets the list of pending checks, runs them, records evidence, and calls `musts validate` again until the list is empty.
+
+Repo: [github.com/bitomule/musts](https://github.com/bitomule/musts). Now the story behind it.
+
 I have been using coding agents more and more during the last months and there was one part of the workflow that was still too manual.
 
 The agent could do the work. The problem was how to know what validations came next.
@@ -61,7 +65,60 @@ The first decision was that it had to be a CLI. A CLI saves tokens, has determin
 
 The second decision was that checks had to be easy for humans to maintain. I considered Markdown because it is pleasant to write and agents read it well. But Markdown became ambiguous as soon as checks needed options. YAML was boring, but represented the rules better.
 
+Here is what a `MUSTS.yml` looks like in practice:
+
+```yaml
+version: 1
+
+checks:
+  build:
+    uses: bazel/build
+    with:
+      target: //App:App
+
+  ui-review:
+    uses: agent
+    paths:
+      - "App/Views/**"
+    instructions: |
+      Run the ui-review skill against any view that changed.
+      Attach the produced screenshot as evidence.
+
+  e2e-login:
+    uses: mav/expect
+    paths:
+      - "App/Login/**"
+    with:
+      flow: flows/login.yaml
+```
+
+Three checks, three different capabilities. The first runs Bazel. The second is an agent contract: when something inside `App/Views/` changes, the agent has to run a skill and attach evidence. The third delegates to MAV, which validates an iOS flow.
+
 The third decision was that the normal output had to be boring and easy to skim. `musts` still uses JSON where JSON makes sense: the extension protocol is JSON, and `musts validate --json` exists for tools. But the normal report is plain text: task id, title, capability, instructions, required evidence, and the completion rule.
+
+This is what the agent reads after running `musts validate`:
+
+```text
+Musts validation pending.
+
+Task: ui-review-loginview
+Title: Review the LoginView UI
+Extension: agent
+Satisfies:
+  - App/Views/LoginView.swift
+Instructions:
+  Run the ui-review skill against any view that changed.
+  Attach the produced screenshot as evidence.
+Evidence required:
+  - text (required): Notes on the review.
+  - log (optional): Any output from the skill run.
+
+Completion rule:
+  Repeat `musts validate` after recording evidence.
+  The task is not done until this report is empty.
+```
+
+No JSON to parse, no nested structures. The agent reads the next obligation and acts on it.
 
 The fourth decision was that the system had to be extensible. Some checks are simple cargo commands. Some need MAV. Some need a skill. Some need domain-specific evidence. The core should not know every rule. It should know how to discover checks, detect what changed, ask the right capability what has to be done, and record whether the evidence satisfied the obligation.
 
