@@ -5,7 +5,7 @@ tags: ["AI","Programming","Tools"]
 excerpt: "I built musts to move project-specific validation rules out of my head and into the repository."
 ---
 
-**Quick context.** `musts` is a small Rust CLI that closes the validation loop between an agent finishing a change and the change being done. Each project declares its own checks in `MUSTS.yml`. The agent runs `musts validate`, gets the list of pending checks, runs them, records evidence, and calls `musts validate` again until the list is empty.
+`musts` is a small Rust CLI that tells a coding agent exactly what it still needs to verify after a change. Each project declares its own checks in `MUSTS.yml`. The agent runs `musts validate`, gets the list, runs it, records evidence, and repeats until the list is empty.
 
 Repo: [github.com/bitomule/musts](https://github.com/bitomule/musts). Now the story behind it.
 
@@ -67,55 +67,27 @@ The second decision was that checks had to be easy for humans to maintain. I con
 
 Here is what a `MUSTS.yml` looks like in practice:
 
-```yaml
-version: 1
-
-checks:
-  build:
-    uses: bazel/build
-    with:
-      target: //App:App
-
-  ui-review:
-    uses: agent
-    paths:
-      - "App/Views/**"
-    instructions: |
-      Run the ui-review skill against any view that changed.
-      Attach the produced screenshot as evidence.
-
-  e2e-login:
-    uses: mav/expect
-    paths:
-      - "App/Login/**"
-    with:
-      flow: flows/login.yaml
-```
+![Code editor screenshot showing a MUSTS.yml file with three checks: a build check using bazel/build, a ui-review check using the agent capability with a paths filter and inline instructions, and an e2e-login check using mav/expect](/images/musts-yaml.png)
 
 Three checks, three different capabilities. The first runs Bazel. The second is an agent contract: when something inside `App/Views/` changes, the agent has to run a skill and attach evidence. The third delegates to MAV, which validates an iOS flow.
 
 The third decision was that the normal output had to be boring and easy to skim. `musts` still uses JSON where JSON makes sense: the extension protocol is JSON, and `musts validate --json` exists for tools. But the normal report is plain text: task id, title, capability, instructions, required evidence, and the completion rule.
 
-This is what the agent reads after running `musts validate`:
+This is what one pending task looks like in a real `musts validate` report:
 
 ```text
-Musts validation pending.
-
-Task: ui-review-loginview
-Title: Review the LoginView UI
-Extension: agent
+Task: cargo-fmt-root
+Title: Run `cargo fmt --check`
+Extension: cargo/fmt
 Satisfies:
-  - App/Views/LoginView.swift
+  - root/fmt
 Instructions:
-  Run the ui-review skill against any view that changed.
-  Attach the produced screenshot as evidence.
+  1. Run `cargo fmt --check` from the workspace root.
+  2. Capture combined stdout/stderr to a file outside the workspace.
+  3. Record the result with `musts evidence cargo-fmt-root --text "…" --asset <log>`.
 Evidence required:
-  - text (required): Notes on the review.
-  - log (optional): Any output from the skill run.
-
-Completion rule:
-  Repeat `musts validate` after recording evidence.
-  The task is not done until this report is empty.
+  - text (required): State whether `cargo fmt --check` reported diffs.
+  - log (required): Stdout/stderr from `cargo fmt --check`.
 ```
 
 No JSON to parse, no nested structures. The agent reads the next obligation and acts on it.
