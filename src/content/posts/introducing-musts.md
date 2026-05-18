@@ -1,6 +1,6 @@
 ---
 title: "Introducing musts"
-date: "2026-05-17 18:00"
+date: "2026-05-18 17:30"
 tags: ["AI","Programming","Tools"]
 excerpt: "I built musts to move project-specific validation rules out of my head and into the repository."
 ---
