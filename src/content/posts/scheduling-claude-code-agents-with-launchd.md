@@ -5,11 +5,15 @@ tags: ["AI","Automation","CommandLine"]
 excerpt: "I get more done in Claude Code than anywhere else, but it could not run agents on a schedule. So I wired one up with launchd, and now a different agent works on my apps every morning before I wake up."
 ---
 
-I love Codex's scheduled automations. Genuinely. Being able to say "run this every morning" and have it happen without me is the kind of small thing that changes how you work.
+I am constantly trying different harnesses and models. This world moves every day, and part of the job is staying honest about what actually works better this week. Out of everything I have tried, one Codex feature became critical to my setup: routines that run tasks for me on a schedule. They open PRs, process open source repos, do real work while I am not watching.
 
-The problem is that I get more done in Claude Code. That is where my repos are, where my auth is, where the agents I trust already run. And Claude had no built-in way to run those agents on a schedule on my own machine.
+Then reality shows up, and reality is money. I cannot pay for both a Codex and a Claude subscription. As an indie developer, covering costs is a titanic task, and these models are not cheap. So I had to choose, and the choice was easy: I get more done with Claude Code. Its harness is simply better for me. That is the subscription I pay for, without giving up trying the rest.
 
-So I hacked one in. Now a different agent wakes up every morning, does a self-contained piece of work on one of my apps, and leaves the result where I will find it. I read it with coffee. This post is exactly how it is wired, so you can build the same thing.
+Let me explain why I stay, because it is not about the model alone. I am not a terminal developer. My whole life I have been drawn to apps, to animations, to things you can see and touch on a screen. I grew up in Xcode, not in nvim. And still, nothing I have tried gives me what Claude agents gives me. Moving in and out of agents with the keyboard. Seeing subagents and forks at a glance. Worktrees managed for me, in the open, with no ceremony. It is a genuinely different feature, and it says something about the direction Anthropic is taking while the rest ship the same terminal. I am far more productive there than in the Codex TUI or a desktop app.
+
+Which leaves one gap. Claude Code has no concept of local scheduled tasks. You can get close with cloud routines, but if you are an iOS developer you already know a Linux container is not an option. There are ways around that. None of them are simple.
+
+So I built the missing piece myself. Now a different agent wakes up every morning, does a self-contained job on one of my apps, and leaves the result where I will find it. I read it with coffee. This post is exactly how it is wired, so you can build the same thing.
 
 ## The core idea
 
@@ -43,14 +47,14 @@ launchd fires jobs on a calendar with `StartCalendarInterval`. Here is a real on
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.claude.cron.koubou-review-lun</string>
+    <string>com.claude.cron.boxy-aso-mon</string>
     <key>ProcessType</key>
     <string>Background</string>
     <key>ProgramArguments</key>
     <array>
         <string>/bin/zsh</string>
         <string>-lc</string>
-        <string>/Users/you/.claude/scheduled-agents/koubou-review-lun/run.sh</string>
+        <string>/Users/you/.claude/scheduled-agents/boxy-aso-mon/run.sh</string>
     </array>
     <key>RunAtLoad</key>
     <false/>
@@ -74,12 +78,12 @@ The job runs `/bin/zsh -lc`, not the binary directly. That login shell is load-b
 
 `StartCalendarInterval` fires only at a single matching instant. Omit a field to mean "every". `{Hour: 9, Minute: 0}` with no weekday means every day at 09:00. `{Weekday: 1, Hour: 9}` means Mondays at 09:00.
 
-That last point has a sharp edge: there is no "every weekday" in one job. If you want Monday to Friday, you create five jobs, one per weekday. That is why my setup literally has `koubou-review-lun`, `-mar`, `-mie`, `-jue`, `-vie`. It looks redundant, but it is how launchd's model works, and being explicit beats a clever single job that silently fires once and makes you think it covers the week.
+That last point has a sharp edge: there is no "every weekday" in a single job. launchd fires one matching instant, so if you want something to run Monday through Friday you write five jobs, one per weekday. In my case that falls out naturally, because each weekday runs a different app. It looks verbose, but being explicit beats a clever single job that silently fires once and makes you think it covers the week.
 
 Drop the plist in `~/Library/LaunchAgents/` and load it:
 
 ```bash
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude.cron.koubou-review-lun.plist
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude.cron.boxy-aso-mon.plist
 ```
 
 ## The trigger: run.sh
@@ -106,9 +110,9 @@ Three deliberate choices in five lines.
 The task and project live in flat files next to the script:
 
 ```
-~/.claude/scheduled-agents/koubou-review-lun/
+~/.claude/scheduled-agents/boxy-aso-mon/
 ├── run.sh
-├── job.env      →  PROJECT="/Users/you/Projects/koubou"
+├── job.env      →  PROJECT="/Users/you/Projects/Boxy"
 ├── task.txt     →  the full prompt
 └── job.log      →  stdout and stderr from the dispatch
 ```
@@ -117,18 +121,18 @@ The task and project live in flat files next to the script:
 
 This is the part people underestimate. The scheduled agent starts cold. It has zero memory of the conversation where you set it up. Whatever you put in `task.txt` is all it knows.
 
-So the prompt has to be fully self-contained: what to do, which repo, what to produce, and where to put it. One of mine reads, roughly: "Review the open PRs and issues in the `bitomule/Koubou` GitHub repo. Summarize which ones need my attention and why, and post the summary where I read it."
+So the prompt has to be fully self-contained: what to do, which app, what to produce, and where to put it. One of mine reads, roughly: "Review the current App Store metadata for Boxy in this repo. Propose one ASO experiment worth running this week, apply it on a branch, and open a PR I can review."
 
-No "the repo we discussed", no "like last time". Write it as if for a stranger, because at nine on Monday morning, it is one.
+No "the app we discussed", no "like last time". Write it as if for a stranger, because at nine on Monday morning, it is one.
 
 ## A tiny CLI to manage it
 
 Hand-writing plists and `launchctl` commands gets old fast, so I wrapped all of it in a small Python script, `schedctl`, exposed as a Claude Code skill called `cron-agent`. It turns plain requests into the plumbing above:
 
 ```bash
-schedctl create --name koubou-review-lun \
-  --project ~/Projects/koubou \
-  --task "Review open PRs and issues in bitomule/Koubou..." \
+schedctl create --name boxy-aso-mon \
+  --project ~/Projects/Boxy \
+  --task "Review Boxy's App Store metadata and propose one ASO experiment..." \
   --weekday 1 --hour 9
 
 schedctl list                      # every job, its schedule, loaded state
@@ -139,16 +143,13 @@ schedctl remove --name <name>      # unload from launchd and delete
 
 `create` writes `task.txt` and `job.env`, generates `run.sh`, renders the plist, and loads it into launchd in one shot. The schedule flags map straight to the calendar: `--weekday` where 1 is Monday, `--hour`, `--minute`, or `--interval` in seconds for interval jobs instead of a clock time.
 
-Because it is a skill, I do not run the CLI by hand. I tell Claude "run a Koubou PR review every weekday at nine" and it turns that into five `create` calls, then fires one immediately to prove the chain works end to end.
+Because it is a skill, I do not run the CLI by hand. I tell Claude "schedule the ASO agent for Boxy every Monday at nine" and it turns that into the `create` call, then fires it once to prove the chain works end to end.
 
 ## What runs on my machine
 
-Ten jobs, all loaded:
+Every weekday, one agent wakes up and works on the App Store presence of a single app: Boxy on Monday, Undolly on Tuesday, HiddenFace on Wednesday, Numly on Thursday, FoodLabel on Friday. It reads the current ASO, proposes an experiment worth trying that week, and leaves the change on a branch for me.
 
-- Koubou PR and issue review, Monday to Friday at 09:00, five jobs.
-- ASO acquisition experiments, one app per weekday: Boxy on Monday, Undolly on Tuesday, HiddenFace on Wednesday, Numly on Thursday, FoodLabel on Friday.
-
-Every morning a fresh agent wakes up, does its self-contained chunk of work on one of my indie apps, and leaves the result behind. I open `claude agents`, read what happened, and decide what to ship.
+A fresh agent, every morning, doing one self-contained piece of work on one of my indie apps. I open `claude agents` with coffee, read what happened, and decide what to ship.
 
 ## Gotchas I learned the annoying way
 
@@ -164,4 +165,6 @@ The Mac has to be awake. launchd runs a missed calendar job when the machine wak
 
 Claude has cloud scheduled routines too, and they are the right call when you want runs that do not depend on your laptop being awake. I went local because I wanted the agents working in my actual checkouts, with my auth, at no session cost, fully under my control. launchd is the boring, reliable primitive that turns that into a short script instead of a service.
 
-That is the whole thing. `claude --bg` does the hard part. launchd just decides when.
+And that is really all this is: a small step inside a setup that never stops moving. The scripts, the infrastructure, the little experiments, they take minutes to change. Maybe next week this exact piece is useless to me. Today it solves a real problem, and that is the magic of working this way.
+
+`claude --bg` does the hard part. launchd just decides when.
